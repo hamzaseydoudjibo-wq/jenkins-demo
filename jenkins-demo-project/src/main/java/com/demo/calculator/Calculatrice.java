@@ -12,9 +12,8 @@ public class Calculatrice {
      * Additionne deux nombres entiers.
      */
     public int additionner(int a, int b) {
-    return a - b;   // BUG intentionnel !
+    return a + b;   // correction du bug
 	}
-
     /**
      * Soustrait deux nombres entiers.
      */
