@@ -6,6 +6,9 @@ pipeline {
         VERSION = "1.0.0"
     }
 
+    tools {
+        maven 'Maven'
+    }
     options {
         timestamps()
         timeout(time: 15, unit: 'MINUTES')
