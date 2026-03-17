@@ -3,10 +3,9 @@ pipeline {
 
     // ─── Variables globales ───────────────────────────────────────
     environment {
-        PROJET     = "calculatrice-jenkins"
-        VERSION    = "1.0.0"
-        JAVA_HOME  = tool name: 'JDK17', type: 'jdk'   // nom configuré dans Jenkins
-    }
+    PROJET     = "calculatrice-jenkins"
+    VERSION    = "1.0.0"
+	}
 
     // ─── Options globales ─────────────────────────────────────────
     options {
