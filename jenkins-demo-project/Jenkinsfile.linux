@@ -1,0 +1,110 @@
+pipeline {
+    agent any
+
+    environment {
+        PROJET  = "calculatrice-jenkins"
+        VERSION = "1.0.0"
+    }
+
+    tools {
+        maven 'Maven'
+    }
+
+    options {
+        timestamps()
+        timeout(time: 15, unit: 'MINUTES')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                echo "--- Recuperation du code source ---"
+                checkout scm
+                echo "Code recupere avec succes !"
+            }
+        }
+
+        stage('Build') {
+            steps {
+                echo "--- Compilation du projet Maven ---"
+                dir('jenkins-demo-project') {
+                    sh 'mvn clean compile -q'
+                }
+                echo "Compilation reussie !"
+            }
+            post {
+                failure {
+                    echo "ECHEC DE COMPILATION - Verifiez les erreurs."
+                }
+            }
+        }
+
+        stage('Tests') {
+            steps {
+                echo "--- Execution des tests unitaires JUnit 5 ---"
+                dir('jenkins-demo-project') {
+                    sh 'mvn test'
+                }
+                echo "Tests termines !"
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                    echo "Rapport JUnit publie dans Jenkins."
+                }
+                failure {
+                    echo "CERTAINS TESTS ONT ECHOUE - Consultez le rapport JUnit."
+                }
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo "--- Creation du fichier JAR ---"
+                dir('jenkins-demo-project') {
+                    sh 'mvn package -DskipTests -q'
+                }
+                echo "JAR cree avec succes !"
+            }
+            post {
+                success {
+                    archiveArtifacts artifacts: '**/target/*.jar', fingerprint: true
+                    echo "Artefact archive dans Jenkins."
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                echo "--- Simulation de deploiement ---"
+                echo "Deploiement de ${PROJET} v${VERSION} en STAGING..."
+                sh 'echo "Deploiement simule avec succes !"'
+                echo "Application disponible sur http://staging.demo.local:8080"
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "========================================="
+            echo "   PIPELINE REUSSI !"
+            echo "   Projet  : ${PROJET}"
+            echo "   Version : ${VERSION}"
+            echo "   Build   : #${env.BUILD_NUMBER}"
+            echo "========================================="
+        }
+        failure {
+            echo "========================================="
+            echo "   PIPELINE EN ECHEC !"
+            echo "   Build : #${env.BUILD_NUMBER}"
+            echo "   Consultez les logs ci-dessus."
+            echo "========================================="
+        }
+        always {
+            echo "Duree totale du build : ${currentBuild.durationString}"
+            cleanWs()
+        }
+    }
+}
